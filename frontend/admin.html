@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal | Jen & Albert Paminta Inventory & Sales System</title>
+  <link rel="icon" type="image/jpeg" href="/logo.jpg">
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body style="background: var(--bg-parchment);">
+
+  <!-- Admin Top Navbar -->
+  <nav class="navbar" style="padding: 0.65rem 1.75rem;">
+    <a href="/admin" class="brand-wrapper">
+      <img src="/logo.jpg" alt="Jen & Albert Paminta" class="brand-logo" style="width: 46px; height: 46px;" />
+      <div>
+        <span class="brand-title" style="font-size: 1.1rem;">JEN & ALBERT PAMINTA</span>
+        <span class="brand-subtitle" style="font-size: 0.75rem;">Inventory & Sales Management</span>
+      </div>
+    </a>
+
+    <div style="display: flex; align-items: center; gap: 1.25rem;">
+      <span id="db-status-badge" class="badge badge-in-stock" style="cursor: pointer;" onclick="switchTab('settings')">
+        ● Connecting...
+      </span>
+      <div style="color: #FFFFFF; font-size: 0.85rem; font-weight: 500;">
+        👤 <span id="admin-username-display">Administrator</span>
+      </div>
+      <a href="/" target="_blank" class="btn btn-outline-gold btn-sm">View Store ↗</a>
+      <button class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: #FFF; border: 1px solid rgba(255,255,255,0.2);" onclick="handleLogout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Admin Layout: Sidebar + Main Content -->
+  <div class="admin-layout">
+    
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div style="padding: 0.5rem 0.75rem 1rem 0.75rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 0.5rem;">
+        <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-gold-light); font-weight: 700;">Navigation Menu</span>
+      </div>
+
+      <a href="javascript:void(0)" class="sidebar-nav-item active" data-tab="dashboard">
+        <span>📊</span> Overview Dashboard
+      </a>
+      <a href="javascript:void(0)" class="sidebar-nav-item" data-tab="inventory">
+        <span>📦</span> Master Inventory Ledger
+      </a>
+      <a href="javascript:void(0)" class="sidebar-nav-item" data-tab="sales">
+        <span>🛒</span> Sales Module & POS
+      </a>
+      <a href="javascript:void(0)" class="sidebar-nav-item" data-tab="history">
+        <span>📋</span> Sales History & Receipts
+      </a>
+      <a href="javascript:void(0)" class="sidebar-nav-item" data-tab="movements">
+        <span>📜</span> Stock Movement Log
+      </a>
+      <a href="javascript:void(0)" class="sidebar-nav-item" data-tab="settings">
+        <span>⚙️</span> Settings & TiDB Health
+      </a>
+
+      <div style="margin-top: auto; padding: 1rem 0.5rem 0 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
+        <img src="/logo.jpg" style="width: 50px; height: 50px; border-radius: 50%; opacity: 0.8; margin-bottom: 0.5rem;" />
+        <div style="font-size: 0.7rem; color: #94A3B8;">Jen & Albert Paminta System v2.0</div>
+      </div>
+    </aside>
+
+    <!-- Main Content Panes -->
+    <main class="admin-content">
+
+      <!-- ================= 1. TAB: DASHBOARD ================= -->
+      <section id="tab-dashboard" class="tab-pane">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2>Executive Dashboard</h2>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Real-time inventory valuation and sales performance.</p>
+          </div>
+          <div style="display: flex; gap: 0.75rem;">
+            <button class="btn btn-gold btn-sm" onclick="switchTab('sales')">+ New POS Sale</button>
+            <button class="btn btn-primary btn-sm" onclick="switchTab('inventory')">Manage Inventory</button>
+          </div>
+        </div>
+
+        <!-- KPI Metrics Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Today's Sales</div>
+            <div class="kpi-value" id="kpi-today-sales">₱0.00</div>
+            <div class="kpi-subtext" id="kpi-today-orders">0 completed</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Month's Sales</div>
+            <div class="kpi-value" id="kpi-month-sales">₱0.00</div>
+            <div class="kpi-subtext" id="kpi-month-orders">0 completed</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Beginning Inventory Value</div>
+            <div class="kpi-value" id="kpi-beginning-val">₱0.00</div>
+            <div class="kpi-subtext">Total cost at opening</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Ending Inventory Value</div>
+            <div class="kpi-value" id="kpi-ending-val" style="color: var(--color-vine-primary);">₱0.00</div>
+            <div class="kpi-subtext">Current live stock valuation</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Low Stock Alerts</div>
+            <div class="kpi-value" id="kpi-low-stock" style="color: #C62828;">0</div>
+            <div class="kpi-subtext">Items needing replenishment</div>
+          </div>
+        </div>
+
+        <!-- Two Column Widget Area -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+          
+          <!-- Low Stock Warning Box -->
+          <div class="card" style="padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 style="font-size: 1.1rem;">⚠️ Low Stock Items</h3>
+              <span class="badge badge-paminta">Restock Needed</span>
+            </div>
+            <div id="low-stock-list">Loading alerts...</div>
+          </div>
+
+          <!-- Top Selling Products -->
+          <div class="card" style="padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 style="font-size: 1.1rem;">🏆 Top Selling Paminta & Wines</h3>
+              <span class="badge badge-gold">Sales Leaderboard</span>
+            </div>
+            <div id="top-selling-list">Loading top items...</div>
+          </div>
+        </div>
+
+        <!-- Recent Sales Table -->
+        <div class="card" style="padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.1rem;">Recent Completed Sales</h3>
+            <button class="btn btn-outline-vine btn-sm" onclick="switchTab('history')">View All Transactions →</button>
+          </div>
+          <div class="table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Customer</th>
+                  <th>Total Amount</th>
+                  <th>Payment</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="recent-sales-tbody">
+                <tr><td colspan="6" style="text-align: center;">Loading recent sales...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. TAB: MASTER INVENTORY LEDGER ================= -->
+      <section id="tab-inventory" class="tab-pane" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2>Master Inventory & Reconciliation Ledger</h2>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">
+              Formula: <strong>Ending Stock = Beginning + Stock Added - Sales Deductions - Less Adjustments</strong>
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
+            <button class="btn btn-gold btn-sm" onclick="document.getElementById('modal-new-product').classList.add('active')">+ New Product</button>
+            <button class="btn btn-primary btn-sm" onclick="openAddStockModal(allProducts[0]?.id)">+ Add Stock (Restock)</button>
+            <button class="btn btn-danger btn-sm" onclick="openLessStockModal(allProducts[0]?.id)">- Less Stock (Damage/Loss)</button>
+          </div>
+        </div>
+
+        <!-- Inventory Summary Badges -->
+        <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; background: #FFFFFF; padding: 1rem 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-gold); flex-wrap: wrap;">
+          <div>Beginning Valuation: <strong id="ledger-total-beg-val" style="color: var(--color-vine-dark);">₱0.00</strong></div>
+          <div style="border-left: 1px solid var(--border-parchment); padding-left: 1.5rem;">Current Ending Valuation: <strong id="ledger-total-end-val" style="color: var(--color-vine-primary);">₱0.00</strong></div>
+          <div style="border-left: 1px solid var(--border-parchment); padding-left: 1.5rem;">Total Potential Retail: <strong id="ledger-total-retail-val" style="color: var(--color-gold-deep);">₱0.00</strong></div>
+        </div>
+
+        <!-- Filters -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+          <div style="flex-grow: 1; min-width: 240px;">
+            <input type="text" id="ledger-search" class="form-control" placeholder="🔍 Search product name or SKU..." />
+          </div>
+          <div style="width: 220px;">
+            <select id="ledger-category-filter" class="form-control">
+              <option value="">All Categories</option>
+              <option value="1">Paminta & Whole Spices</option>
+              <option value="2">Ground & Blended Spices</option>
+              <option value="3">Estate Wines & Cellar Reserve</option>
+              <option value="4">Fresh Harvest & Table Grapes</option>
+              <option value="5">Heritage Gift Packs</option>
+            </select>
+          </div>
+          <button class="btn btn-outline-vine" onclick="loadInventoryLedger()">↻ Refresh Ledger</button>
+        </div>
+
+        <!-- Master Table -->
+        <div class="table-container">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Item Description</th>
+                <th>Unit</th>
+                <th>Price</th>
+                <th style="text-align: center; background: #EAE3D5;">Beginning</th>
+                <th style="text-align: center; color: #2E7D32;">+ Added</th>
+                <th style="text-align: center; color: #C62828;">- Sales</th>
+                <th style="text-align: center; color: #E65100;">- Less Adj</th>
+                <th style="text-align: center; background: #E8DEC8;">Calc. Ending</th>
+                <th style="text-align: center; color: var(--color-vine-primary);">Current Stock</th>
+                <th>Status</th>
+                <th>Quick Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-ledger-tbody">
+              <tr><td colspan="12" style="text-align: center; padding: 2rem;">Loading inventory records...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= 3. TAB: POS & SALES MODULE ================= -->
+      <section id="tab-sales" class="tab-pane" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <div>
+            <h2>Tasting Room & Sales Register (POS)</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Every completed sale automatically decrements and updates inventory in real time.</p>
+          </div>
+          <button class="btn btn-outline-vine btn-sm" onclick="clearPOSCart()">Clear Cart</button>
+        </div>
+
+        <div class="pos-container">
+          <!-- Left: Product Catalog -->
+          <div class="pos-catalog">
+            <div style="margin-bottom: 1rem;">
+              <input type="text" id="pos-search" class="form-control" placeholder="🔍 Search Paminta, Wine, Gift Sets..." />
+            </div>
+            <div id="pos-catalog-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; overflow-y: auto; flex-grow: 1; padding-right: 0.35rem;">
+              <!-- Item Tiles Injected by JS -->
+            </div>
+          </div>
+
+          <!-- Right: Active Ticket / Cart -->
+          <div class="pos-cart">
+            <div style="padding: 1rem 1.25rem; background: var(--color-vine-pale); border-bottom: 1px solid var(--border-gold); display: flex; justify-content: space-between; align-items: center;">
+              <h3 style="font-size: 1.05rem; color: var(--color-vine-dark);">Active Sale Ticket</h3>
+              <span class="badge badge-gold">Auto Stock Less</span>
+            </div>
+
+            <!-- Cart Items Scroll -->
+            <div id="pos-cart-items" style="flex-grow: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+              <!-- Rendered by JS -->
+            </div>
+
+            <!-- Customer & Payment Form -->
+            <div style="padding: 1rem 1.25rem; background: var(--bg-card-subtle); border-top: 1px solid var(--border-parchment);">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.65rem;">
+                <input type="text" id="pos-customer-name" class="form-control" placeholder="Customer Name" value="Walk-in Customer" />
+                <select id="pos-payment-method" class="form-control">
+                  <option value="CASH">Cash</option>
+                  <option value="GCASH">GCash</option>
+                  <option value="CARD">Card</option>
+                  <option value="COD">COD</option>
+                </select>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.65rem;">
+                <div>
+                  <label style="font-size: 0.725rem; font-weight: 600; color: var(--text-muted);">Discount (₱)</label>
+                  <input type="number" id="pos-discount" class="form-control" value="0" min="0" step="10" />
+                </div>
+                <div>
+                  <label style="font-size: 0.725rem; font-weight: 600; color: var(--text-muted);">Amount Tendered (₱)</label>
+                  <input type="number" id="pos-tendered" class="form-control" placeholder="0.00" min="0" step="50" />
+                </div>
+              </div>
+
+              <div style="border-top: 1px dashed var(--border-parchment); padding-top: 0.5rem; font-size: 0.85rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                  <span>Subtotal:</span>
+                  <span id="pos-subtotal-display">₱0.00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 1.2rem; color: var(--color-vine-dark); margin: 0.35rem 0;">
+                  <span>Total Payable:</span>
+                  <span id="pos-total-display" style="color: var(--color-vine-primary);">₱0.00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-weight: 700; color: #2E7D32;">
+                  <span>Change Due:</span>
+                  <span id="pos-change-display">₱0.00</span>
+                </div>
+              </div>
+
+              <button class="btn btn-gold" style="width: 100%; margin-top: 0.75rem; font-size: 1rem; padding: 0.75rem;" onclick="handlePOSCheckout()">
+                💳 Complete Sale & Deduct Stock
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. TAB: SALES HISTORY ================= -->
+      <section id="tab-history" class="tab-pane" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2>Sales Transactions & Invoices</h2>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Complete history of sales receipts. Voiding a sale automatically restocks the items back to inventory.</p>
+          </div>
+          <button class="btn btn-outline-vine" onclick="loadSalesHistory()">↻ Refresh</button>
+        </div>
+
+        <div class="table-container">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Date & Time</th>
+                <th>Customer Name</th>
+                <th>Payment Mode</th>
+                <th>Total Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sales-history-tbody">
+              <tr><td colspan="7" style="text-align: center; padding: 2rem;">Loading sales history...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= 5. TAB: MOVEMENTS AUDIT TRAIL ================= -->
+      <section id="tab-movements" class="tab-pane" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2>Inventory Movements Audit Log</h2>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Detailed audit trail of all additions, less/deductions, and automated sales reductions.</p>
+          </div>
+          <button class="btn btn-outline-vine" onclick="loadMovements()">↻ Refresh Log</button>
+        </div>
+
+        <div class="table-container">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Product Description</th>
+                <th>Movement Type</th>
+                <th style="text-align: center;">Qty Changed</th>
+                <th style="text-align: center;">Previous Stock</th>
+                <th style="text-align: center;">New Stock</th>
+                <th>Reference #</th>
+                <th>Notes / Source</th>
+              </tr>
+            </thead>
+            <tbody id="movements-tbody">
+              <tr><td colspan="8" style="text-align: center; padding: 2rem;">Loading movements log...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= 6. TAB: SETTINGS & TIDB HEALTH ================= -->
+      <section id="tab-settings" class="tab-pane" style="display: none;">
+        <div style="margin-bottom: 1.5rem;">
+          <h2>Settings & TiDB Cloud Connectivity</h2>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">Database connection health check and estate details.</p>
+        </div>
+
+        <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid var(--border-gold);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.15rem;">⚡ TiDB Cloud / MySQL Health Status</h3>
+            <button class="btn btn-gold btn-sm" onclick="checkDbHealth()">Run Live Connection Test</button>
+          </div>
+          <div id="db-health-details">Loading connection diagnostics...</div>
+        </div>
+
+        <div class="card" style="padding: 1.5rem;">
+          <h3 style="font-size: 1.15rem; margin-bottom: 1rem;">Estate Business Profile</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Estate / Business Name</label>
+              <input type="text" id="setting-estate-name" class="form-control" value="Jen & Albert Paminta" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contact Phone</label>
+              <input type="text" id="setting-contact-phone" class="form-control" value="+63 917 123 4567" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contact Email</label>
+              <input type="email" id="setting-contact-email" class="form-control" value="contact@jenalbertpaminta.com" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Physical Estate Address</label>
+              <input type="text" id="setting-address" class="form-control" value="Paminta Estate & Vineyards, Philippines" />
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveSettings()">Save Business Settings</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Modal: Add Stock (Restock) -->
+  <div class="modal-backdrop" id="modal-add-stock">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="color: var(--color-vine-dark);">➕ Add Stock (Restock Paminta / Harvest)</h3>
+        <button onclick="closeModal('modal-add-stock')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+      </div>
+      <form id="form-add-stock" onsubmit="event.preventDefault(); submitAddStock();">
+        <div class="modal-body">
+          <input type="hidden" id="add-stock-prod-id" />
+          <div style="margin-bottom: 1rem; padding: 0.75rem; background: var(--color-vine-pale); border-radius: var(--radius-sm);">
+            Target Item: <strong id="add-stock-prod-name">-</strong>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quantity to Add *</label>
+            <input type="number" id="add-stock-qty" class="form-control" step="0.5" min="0.1" placeholder="e.g. 50" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reference ID / Delivery Receipt #</label>
+            <input type="text" id="add-stock-ref" class="form-control" placeholder="e.g. HARVEST-BATCH-08 or DR-1049" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Source / Supplier / Notes</label>
+            <textarea id="add-stock-notes" class="form-control" rows="2" placeholder="e.g. Direct harvest from Paminta Block B"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-vine" onclick="closeModal('modal-add-stock')">Cancel</button>
+          <button type="submit" class="btn btn-gold">+ Add to Current Stock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Less Stock (Deduct / Adjust) -->
+  <div class="modal-backdrop" id="modal-less-stock">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="color: var(--color-vine-dark);">➖ Less Stock (Deduct Damaged / Spoilage)</h3>
+        <button onclick="closeModal('modal-less-stock')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+      </div>
+      <form id="form-less-stock" onsubmit="event.preventDefault(); submitLessStock();">
+        <div class="modal-body">
+          <input type="hidden" id="less-stock-prod-id" />
+          <div style="margin-bottom: 1rem; padding: 0.75rem; background: #FFEBEE; border-radius: var(--radius-sm); color: #B71C1C;">
+            Target Item: <strong id="less-stock-prod-name">-</strong>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quantity to Deduct *</label>
+            <input type="number" id="less-stock-qty" class="form-control" step="0.5" min="0.1" placeholder="e.g. 5" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Deduction Reason *</label>
+            <select id="less-stock-reason" class="form-control">
+              <option value="DAMAGE">Damaged Packaging / Torn Sacks</option>
+              <option value="SPOILAGE">Spoilage / Humidity Moisture Loss</option>
+              <option value="SHRINKAGE">Drying Shrinkage / Weight Loss</option>
+              <option value="SAMPLING">Free Sampling / Wine Tasting</option>
+              <option value="COUNT_CORRECTION">Physical Audit Count Discrepancy</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reference ID</label>
+            <input type="text" id="less-stock-ref" class="form-control" placeholder="e.g. ADJ-2026-001" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Explanation / Audit Notes</label>
+            <textarea id="less-stock-notes" class="form-control" rows="2" placeholder="e.g. Bag punctured during warehouse transfer"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-vine" onclick="closeModal('modal-less-stock')">Cancel</button>
+          <button type="submit" class="btn btn-danger">- Deduct from Stock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Set Beginning Stock -->
+  <div class="modal-backdrop" id="modal-set-beg">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="color: var(--color-vine-dark);">⚙️ Set Beginning Stock Balance</h3>
+        <button onclick="closeModal('modal-set-beg')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="set-beg-prod-id" />
+        <p style="margin-bottom: 1rem; font-size: 0.9rem;">
+          Item: <strong id="set-beg-prod-name">-</strong>
+        </p>
+        <div class="form-group">
+          <label class="form-label">New Beginning Stock Count</label>
+          <input type="number" id="set-beg-qty" class="form-control" step="0.5" min="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reason / Notes</label>
+          <input type="text" id="set-beg-notes" class="form-control" placeholder="e.g. Annual inventory rollover" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-vine" onclick="closeModal('modal-set-beg')">Cancel</button>
+        <button type="button" class="btn btn-gold" onclick="submitSetBeg()">Update Beginning Stock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create New Product -->
+  <div class="modal-backdrop" id="modal-new-product">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="color: var(--color-vine-dark);">📦 Add New Product to Catalog</h3>
+        <button onclick="closeModal('modal-new-product')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+      </div>
+      <form id="form-new-product" onsubmit="event.preventDefault(); submitNewProduct();">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Product Name *</label>
+            <input type="text" id="new-prod-name" class="form-control" placeholder="e.g. Special Whole Black Paminta (250g)" required />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label">SKU / Code</label>
+              <input type="text" id="new-prod-sku" class="form-control" placeholder="e.g. PAM-BLK-250" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select id="new-prod-category" class="form-control">
+                <option value="1">Paminta & Whole Spices</option>
+                <option value="2">Ground & Blended Spices</option>
+                <option value="3">Estate Wines & Cellar Reserve</option>
+                <option value="4">Fresh Harvest & Table Grapes</option>
+                <option value="5">Heritage Gift Packs</option>
+              </select>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label">Unit of Measure</label>
+              <input type="text" id="new-prod-unit" class="form-control" placeholder="pouch, kg, bottle" value="pack" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cost Price (₱)</label>
+              <input type="number" id="new-prod-cost" class="form-control" step="0.5" placeholder="0.00" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Selling Price (₱) *</label>
+              <input type="number" id="new-prod-price" class="form-control" step="0.5" placeholder="0.00" required />
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label">Beginning Stock Count</label>
+              <input type="number" id="new-prod-beg" class="form-control" step="0.5" placeholder="Initial stock" value="50" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Low Stock Alert Level</label>
+              <input type="number" id="new-prod-alert" class="form-control" step="1" value="10" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Product Description</label>
+            <textarea id="new-prod-desc" class="form-control" rows="2" placeholder="Tasting notes, packaging specifications, etc."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-vine" onclick="closeModal('modal-new-product')">Cancel</button>
+          <button type="submit" class="btn btn-gold">Create Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Printable Receipt -->
+  <div class="modal-backdrop" id="modal-receipt">
+    <div class="modal-box" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 style="color: var(--color-vine-dark);">Sales Receipt</h3>
+        <button onclick="closeModal('modal-receipt')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="background: #FFF;">
+        <div id="printable-receipt">
+          <!-- Receipt Content injected by JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-vine" onclick="closeModal('modal-receipt')">Close</button>
+        <button class="btn btn-gold" onclick="window.print()">🖨️ Print Receipt</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/admin.js"></script>
+</body>
+</html>
+

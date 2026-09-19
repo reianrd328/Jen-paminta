@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jen & Albert Paminta | Fine Vineyard Wines & Harvest Spices</title>
+  <link rel="icon" type="image/jpeg" href="/logo.jpg">
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <nav class="navbar">
+    <a href="/" class="brand-wrapper">
+      <img src="/logo.jpg" alt="Jen & Albert Paminta" class="brand-logo" />
+      <div>
+        <span class="brand-title">JEN & ALBERT</span>
+        <span class="brand-subtitle">Paminta Vineyard & Estate</span>
+      </div>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#collection">🍇 Collection</a></li>
+      <li><a href="#story">📜 Heritage</a></li>
+      <li><a href="javascript:void(0)" onclick="openTrackModal()">🔍 Track Order</a></li>
+      <li>
+        <button class="cart-icon-btn" onclick="openCartDrawer()">
+          <span>🛒 Basket</span>
+          <span class="cart-badge" id="cart-badge-count">0</span>
+        </button>
+      </li>
+      <li><a href="/login" class="btn btn-outline-gold btn-sm">Staff Portal</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-section">
+    <img src="/logo.jpg" alt="Jen & Albert Paminta Seal" class="hero-emblem" />
+    <h1 class="hero-title">JEN & ALBERT PAMINTA</h1>
+    <p class="hero-subtitle">Cultivating premier vineyard wines, lush table grapes, and sun-dried gourmet Paminta from our heritage grounds.</p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="#collection" class="btn btn-gold btn-lg">Explore Catalog</a>
+      <button onclick="openTrackModal()" class="btn btn-outline-gold btn-lg">Track Existing Order</button>
+    </div>
+  </header>
+
+  <!-- Main Store Container -->
+  <main class="container" style="max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem;" id="collection">
+    
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+      <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-gold-deep); letter-spacing: 0.15em; text-transform: uppercase;">Farm to Cellar Harvest</span>
+      <h2 style="font-size: 2.2rem; color: var(--color-vine-dark); margin-top: 0.25rem;">Our Estate Collection</h2>
+      <hr class="gold-divider" style="max-width: 250px; margin: 0.75rem auto 1.5rem auto;" />
+    </div>
+
+    <!-- Category Filters & Search -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div class="filter-bar" style="margin: 0;">
+        <button class="filter-btn active" onclick="filterCategory('ALL', this)">All Items</button>
+        <button class="filter-btn" onclick="filterCategory('Paminta', this)">🌿 Paminta & Spices</button>
+        <button class="filter-btn" onclick="filterCategory('Wine', this)">🍷 Estate Wines</button>
+        <button class="filter-btn" onclick="filterCategory('Grapes', this)">🍇 Table Grapes</button>
+        <button class="filter-btn" onclick="filterCategory('Gift', this)">🎁 Gift Sets</button>
+      </div>
+      <div style="min-width: 260px;">
+        <input type="text" id="public-search-input" class="form-control" placeholder="🔍 Search paminta, wine, box..." />
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="product-grid" id="public-product-grid">
+      <div style="grid-column: 1/-1; text-align: center; padding: 4rem;">Loading estate catalog...</div>
+    </div>
+
+    <!-- Estate Story Section -->
+    <section id="story" style="background: #FFFFFF; border: 1px solid var(--border-gold); border-radius: var(--radius-lg); padding: 3rem; margin: 3rem 0; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 3rem; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 280px; text-align: center;">
+        <img src="/logo.jpg" style="width: 200px; height: 200px; border-radius: 50%; border: 3px solid var(--color-gold-primary); box-shadow: var(--shadow-gold);" />
+      </div>
+      <div style="flex: 2; min-width: 300px;">
+        <span style="color: var(--color-gold-deep); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;">The Paminta Family Heritage</span>
+        <h2 style="font-size: 2rem; color: var(--color-vine-dark); margin: 0.5rem 0 1rem 0;">From Rich Soil to Refined Palates</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem; line-height: 1.7;">
+          Founded by Jen & Albert Paminta, our estate unites centuries of agricultural passion. In our fertile grounds, grapevines yield exquisite sweet clusters alongside sun-drenched black pepper berries. Every single grain of Paminta and every drop of handcrafted wine carries our commitment to craftsmanship, purity, and organic farming.
+        </p>
+        <div style="display: flex; gap: 2rem; margin-top: 1.5rem;">
+          <div>
+            <h4 style="color: var(--color-vine-primary); font-size: 1.4rem;">100% Pure</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">No fillers or additives</p>
+          </div>
+          <div>
+            <h4 style="color: var(--color-vine-primary); font-size: 1.4rem;">Farm Fresh</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Hand-harvested daily</p>
+          </div>
+          <div>
+            <h4 style="color: var(--color-vine-primary); font-size: 1.4rem;">Live TiDB Cloud</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Real-time inventory sync</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Cart Drawer -->
+  <div class="drawer-overlay" id="cart-drawer-overlay" onclick="if(event.target === this) closeCartDrawer()">
+    <div class="cart-drawer">
+      <div class="drawer-header">
+        <h3 style="font-size: 1.15rem; color: var(--color-vine-dark);">Your Shopping Basket</h3>
+        <button onclick="closeCartDrawer()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-vine-dark);">&times;</button>
+      </div>
+      <div class="drawer-body" id="drawer-items-list">
+        <!-- Cart Items Injected by JS -->
+      </div>
+      <div class="drawer-footer">
+        <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">
+          <span>Subtotal:</span>
+          <span id="drawer-subtotal-display" style="color: var(--color-vine-primary);">₱0.00</span>
+        </div>
+        <button class="btn btn-gold" style="width: 100%;" onclick="openCheckoutModal()">Proceed to Checkout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div class="modal-backdrop" id="modal-checkout">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="color: var(--color-vine-dark);">Complete Your Order</h3>
+        <button onclick="closeCheckoutModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" id="checkout-name" class="form-control" placeholder="e.g. Maria Santos" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Phone / Mobile *</label>
+          <input type="text" id="checkout-phone" class="form-control" placeholder="e.g. 0917 123 4567" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Delivery Address</label>
+          <textarea id="checkout-address" class="form-control" rows="2" placeholder="Street, Barangay, City, Province"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Method</label>
+          <select id="checkout-payment" class="form-control">
+            <option value="COD">Cash on Delivery / Pick-up</option>
+            <option value="GCASH">GCash / E-Wallet</option>
+            <option value="CARD">Debit / Credit Card</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Special Delivery Instructions</label>
+          <input type="text" id="checkout-notes" class="form-control" placeholder="Optional notes for our courier" />
+        </div>
+        <div style="background: var(--color-vine-pale); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-gold); margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 600;">Total Payable:</span>
+          <span id="checkout-total-display" style="font-weight: 800; font-size: 1.25rem; color: var(--color-vine-primary);">₱0.00</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-vine" onclick="closeCheckoutModal()">Cancel</button>
+        <button class="btn btn-gold" onclick="submitCustomerOrder()">Place Order & Reserve Stock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Success Modal -->
+  <div class="modal-backdrop" id="modal-order-success">
+    <div class="modal-box" style="text-align: center; padding: 2.5rem 1.5rem;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
+      <h2 style="color: var(--color-vine-dark); margin-bottom: 0.5rem;">Order Placed Successfully!</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Your order has been recorded in our inventory system and your items have been reserved.
+      </p>
+      <div style="background: var(--bg-parchment); border: 1px solid var(--border-gold); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.5rem;">
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Invoice / Tracking Number:</span>
+        <div id="order-success-invoice" style="font-size: 1.4rem; font-weight: 800; color: var(--color-vine-primary); margin: 0.25rem 0;">-</div>
+        <span style="font-size: 0.85rem;">Total: <strong id="order-success-total">₱0.00</strong></span>
+      </div>
+      <button class="btn btn-primary" onclick="closeModal('modal-order-success')">Continue Shopping</button>
+    </div>
+  </div>
+
+  <!-- Track Order Modal -->
+  <div class="modal-backdrop" id="modal-track">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="color: var(--color-vine-dark);">Track Order Status</h3>
+        <button onclick="closeModal('modal-track')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Invoice Number</label>
+          <input type="text" id="track-invoice-input" class="form-control" placeholder="e.g. INV-PAM-20260919-1234" />
+        </div>
+        <button class="btn btn-gold" style="width: 100%;" onclick="lookupOrder()">Find Order</button>
+        <div id="track-result-div"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer style="background: var(--color-vine-dark); color: #E2E8E4; padding: 3rem 2rem 1.5rem 2rem; border-top: 3px solid var(--color-gold-primary); text-align: center;">
+    <img src="/logo.jpg" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--color-gold-primary); margin-bottom: 1rem;" />
+    <h3 style="color: #FFFFFF; font-size: 1.25rem; margin-bottom: 0.25rem;">JEN & ALBERT PAMINTA</h3>
+    <p style="color: var(--color-gold-light); font-size: 0.85rem; margin-bottom: 1.5rem;">Authentic Vineyard & Gourmet Harvest Estate • Connected Live with TiDB Cloud</p>
+    <div style="font-size: 0.775rem; color: #8E9891; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 1.5rem;">
+      &copy; 2026 Jen & Albert Paminta. All rights reserved. | <a href="/login" style="color: var(--color-gold-light); text-decoration: none;">Staff Login</a>
+    </div>
+  </footer>
+
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>
+

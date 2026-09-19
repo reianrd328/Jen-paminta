@@ -1,0 +1,2 @@
+web: gunicorn --chdir backend wsgi:app -b 0.0.0.0:$PORT
+
