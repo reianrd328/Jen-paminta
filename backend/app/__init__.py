@@ -74,10 +74,21 @@ def create_app():
     @app.route("/download-apk")
     @app.route("/app-debug.apk")
     def download_apk():
-        apk_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "JenPaminta-v1.0.apk"))
-        if os.path.exists(apk_path):
-            return send_from_directory(os.path.dirname(apk_path), os.path.basename(apk_path), as_attachment=True)
-        return "APK file not found. Please compile the APK.", 404
+        apk_candidates = [
+            os.path.abspath(os.path.join(assets_dir, "apk", "JenPaminta-v1.0.apk")),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "JenPaminta-v1.0.apk")),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "assets", "apk", "JenPaminta-v1.0.apk"))
+        ]
+        for candidate in apk_candidates:
+            if os.path.exists(candidate):
+                return send_from_directory(
+                    os.path.dirname(candidate),
+                    os.path.basename(candidate),
+                    as_attachment=True,
+                    download_name="JenPaminta-v1.0.apk",
+                    mimetype="application/vnd.android.package-archive"
+                )
+        return "APK file not found on server.", 404
 
     return app
 
