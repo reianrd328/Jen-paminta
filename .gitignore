@@ -46,3 +46,16 @@ desktop.ini
 .idea/
 *.swp
 
+# Node & Capacitor
+node_modules/
+package-lock.json
+
+# Android Build
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+*.apk
+
+

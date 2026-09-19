@@ -1,0 +1,16 @@
+{
+  "appId": "com.jenalbert.paminta",
+  "appName": "Jen & Albert Paminta",
+  "webDir": "frontend",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://jen-paminta.onrender.com",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  }
+}
+

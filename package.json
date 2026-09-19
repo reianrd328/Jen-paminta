@@ -1,0 +1,17 @@
+{
+  "name": "jen-paminta-app",
+  "version": "1.0.0",
+  "description": "Jen & Albert Paminta Mobile & Tablet POS System",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'Frontend ready'",
+    "cap:add": "cap add android",
+    "cap:sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  }
+}
+

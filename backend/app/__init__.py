@@ -63,5 +63,21 @@ def create_app():
     def serve_logo():
         return send_from_directory(os.path.join(assets_dir, "images"), "logo.jpg")
 
+    @app.route("/manifest.json")
+    def serve_manifest():
+        return send_from_directory(frontend_dir, "manifest.json", mimetype="application/manifest+json")
+
+    @app.route("/sw.js")
+    def serve_sw():
+        return send_from_directory(frontend_dir, "sw.js", mimetype="application/javascript")
+
+    @app.route("/download-apk")
+    @app.route("/app-debug.apk")
+    def download_apk():
+        apk_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "JenPaminta-v1.0.apk"))
+        if os.path.exists(apk_path):
+            return send_from_directory(os.path.dirname(apk_path), os.path.basename(apk_path), as_attachment=True)
+        return "APK file not found. Please compile the APK.", 404
+
     return app
 

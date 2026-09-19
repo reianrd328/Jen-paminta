@@ -49,9 +49,22 @@ function initTabs() {
   });
 }
 
+function toggleMobileSidebar() {
+  const sb = document.getElementById('admin-sidebar');
+  const bd = document.getElementById('sidebar-backdrop');
+  if (sb) sb.classList.toggle('open');
+  if (bd) bd.classList.toggle('active');
+}
+
 function switchTab(tabId) {
   currentTab = tabId;
   window.location.hash = tabId;
+
+  // Auto-close sidebar on mobile
+  const sb = document.getElementById('admin-sidebar');
+  const bd = document.getElementById('sidebar-backdrop');
+  if (sb) sb.classList.remove('open');
+  if (bd) bd.classList.remove('active');
 
   document.querySelectorAll('.sidebar-nav-item').forEach(el => {
     el.classList.toggle('active', el.dataset.tab === tabId);
