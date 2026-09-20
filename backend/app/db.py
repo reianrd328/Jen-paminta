@@ -178,12 +178,16 @@ def init_db():
                 current_stock DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
                 min_stock_alert DECIMAL(10, 2) NOT NULL DEFAULT 10.00,
                 description TEXT,
-                image_url VARCHAR(255) DEFAULT '',
+                image_url MEDIUMTEXT,
                 is_active BOOLEAN DEFAULT TRUE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             );
             """)
+            try:
+                cursor.execute("ALTER TABLE products MODIFY COLUMN image_url MEDIUMTEXT;")
+            except Exception:
+                pass
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS inventory_movements (
                 id INT AUTO_INCREMENT PRIMARY KEY,

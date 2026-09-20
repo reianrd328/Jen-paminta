@@ -148,6 +148,7 @@ def get_inventory_ledger():
     query = """
         SELECT p.id, p.sku, p.name, p.unit, p.unit_price, p.cost_price, 
                p.beginning_stock, p.current_stock, p.min_stock_alert,
+               p.image_url,
                c.name as category_name
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
@@ -226,6 +227,7 @@ def get_inventory_ledger():
             "product_id": pid,
             "sku": p["sku"],
             "name": p["name"],
+            "image_url": p.get("image_url") or "/logo.jpg",
             "category_name": p["category_name"] or "General",
             "unit": p["unit"],
             "unit_price": price,

@@ -63,7 +63,7 @@ def create_product():
     beginning_stock = float(data.get("beginning_stock") or 0.0)
     min_stock_alert = float(data.get("min_stock_alert") or 10.0)
     description = (data.get("description") or "").strip()
-    image_url = (data.get("image_url") or "/assets/images/logo.jpg").strip()
+    image_url = (data.get("image_url") or "/logo.jpg").strip()
 
     if not name:
         return jsonify({"success": False, "message": "Product name is required"}), 400
@@ -116,7 +116,7 @@ def update_product(product_id):
     cost_price = float(data.get("cost_price", product["cost_price"]))
     min_stock_alert = float(data.get("min_stock_alert", product["min_stock_alert"]))
     description = data.get("description", product["description"]).strip()
-    image_url = data.get("image_url", product.get("image_url", "/assets/images/logo.jpg"))
+    image_url = data.get("image_url", product.get("image_url", "/logo.jpg"))
 
     if not name or not sku:
         return jsonify({"success": False, "message": "Product name and SKU are required"}), 400

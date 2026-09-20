@@ -50,7 +50,7 @@ function renderProductGrid(products) {
     return `
       <div class="product-card">
         <div class="product-img-wrapper">
-          <img src="/logo.jpg" alt="${p.name}" class="product-img" />
+          <img src="${p.image_url || '/logo.jpg'}" onerror="this.src='/logo.jpg'" alt="${p.name}" class="product-img" />
           <span class="badge ${badgeClass} stock-tag">${badgeText}</span>
         </div>
         <div class="product-body">
@@ -103,6 +103,7 @@ function addToCustomerCart(productId) {
       product_id: prod.id,
       name: prod.name,
       unit: prod.unit,
+      image_url: prod.image_url || '/logo.jpg',
       unit_price: parseFloat(prod.unit_price),
       quantity: 1,
       subtotal: parseFloat(prod.unit_price),
@@ -179,7 +180,7 @@ function renderCartDrawer() {
 
   container.innerHTML = customerCart.map(it => `
     <div class="cart-item-row">
-      <img src="/logo.jpg" style="width: 45px; height: 45px; border-radius: var(--radius-sm); object-fit: contain; background: #FAF6F0;" />
+      <img src="${it.image_url || '/logo.jpg'}" onerror="this.src='/logo.jpg'" alt="${it.name}" style="width: 45px; height: 45px; border-radius: var(--radius-sm); object-fit: cover; background: #FAF6F0; border: 1px solid var(--border-gold);" />
       <div style="flex-grow: 1;">
         <div style="font-weight: 600; font-size: 0.875rem;">${it.name}</div>
         <div style="font-size: 0.775rem; color: var(--text-muted);">${API.formatCurrency(it.unit_price)} / ${it.unit}</div>

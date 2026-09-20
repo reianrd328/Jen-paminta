@@ -439,6 +439,28 @@
       <form id="form-edit-product" onsubmit="event.preventDefault(); submitEditProduct();">
         <div class="modal-body">
           <input type="hidden" id="edit-prod-id" />
+
+          <!-- Product Photo Upload Section -->
+          <div class="form-group" style="margin-bottom: 1.25rem; padding: 0.85rem; background: #FAF7F2; border: 1px dashed var(--color-gold-muted); border-radius: var(--radius-sm);">
+            <label class="form-label" style="font-weight: 700; margin-bottom: 0.5rem; display: block;">📷 Product Photo / Image</label>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 80px; height: 80px; border-radius: 8px; border: 2px solid var(--border-gold); overflow: hidden; background: #FFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-sm);">
+                <img id="edit-prod-img-preview" src="/logo.jpg" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='/logo.jpg'" />
+              </div>
+              <div style="flex-grow: 1;">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.4rem;">
+                  <label class="btn btn-outline-vine btn-sm" style="cursor: pointer; margin: 0; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                    📁 Upload / Take Photo
+                    <input type="file" id="edit-prod-file-input" accept="image/*" style="display: none;" onchange="handleProductImageSelect(event, 'edit-prod-img-preview', 'edit-prod-img-url')" />
+                  </label>
+                  <button type="button" class="btn btn-sm" style="background: #FFF; border: 1px solid #CCC; font-size: 0.775rem;" onclick="resetProductImage('edit-prod-img-preview', 'edit-prod-img-url', 'edit-prod-file-input')">Reset</button>
+                </div>
+                <input type="text" id="edit-prod-img-url" class="form-control" placeholder="Or paste image URL (optional)" style="font-size: 0.8rem; padding: 0.35rem 0.5rem;" oninput="previewManualUrl(this.value, 'edit-prod-img-preview')" />
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Takes photos via camera or gallery (auto-compressed & stored permanently in TiDB).</div>
+              </div>
+            </div>
+          </div>
+
           <div class="form-group">
             <label class="form-label">Item Description / Name *</label>
             <input type="text" id="edit-prod-name" class="form-control" required />
@@ -608,6 +630,27 @@
       </div>
       <form id="form-new-product" onsubmit="event.preventDefault(); submitNewProduct();">
         <div class="modal-body">
+          <!-- Product Photo Upload Section -->
+          <div class="form-group" style="margin-bottom: 1.25rem; padding: 0.85rem; background: #FAF7F2; border: 1px dashed var(--color-gold-muted); border-radius: var(--radius-sm);">
+            <label class="form-label" style="font-weight: 700; margin-bottom: 0.5rem; display: block;">📷 Product Photo / Image</label>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 80px; height: 80px; border-radius: 8px; border: 2px solid var(--border-gold); overflow: hidden; background: #FFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-sm);">
+                <img id="new-prod-img-preview" src="/logo.jpg" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='/logo.jpg'" />
+              </div>
+              <div style="flex-grow: 1;">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.4rem;">
+                  <label class="btn btn-outline-vine btn-sm" style="cursor: pointer; margin: 0; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                    📁 Upload / Take Photo
+                    <input type="file" id="new-prod-file-input" accept="image/*" style="display: none;" onchange="handleProductImageSelect(event, 'new-prod-img-preview', 'new-prod-img-url')" />
+                  </label>
+                  <button type="button" class="btn btn-sm" style="background: #FFF; border: 1px solid #CCC; font-size: 0.775rem;" onclick="resetProductImage('new-prod-img-preview', 'new-prod-img-url', 'new-prod-file-input')">Reset</button>
+                </div>
+                <input type="text" id="new-prod-img-url" class="form-control" placeholder="Or paste image URL (optional)" style="font-size: 0.8rem; padding: 0.35rem 0.5rem;" oninput="previewManualUrl(this.value, 'new-prod-img-preview')" />
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Takes photos via camera or gallery (auto-compressed & stored permanently in TiDB).</div>
+              </div>
+            </div>
+          </div>
+
           <div class="form-group">
             <label class="form-label">Product Name *</label>
             <input type="text" id="new-prod-name" class="form-control" placeholder="e.g. Special Whole Black Paminta (250g)" required />

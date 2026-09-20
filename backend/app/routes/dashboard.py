@@ -25,7 +25,7 @@ def get_stats():
 
     # 3. Products & Stock Metrics
     prods = DB.fetch_all("""
-        SELECT id, name, sku, unit, beginning_stock, current_stock, min_stock_alert, cost_price, unit_price
+        SELECT id, name, sku, unit, beginning_stock, current_stock, min_stock_alert, cost_price, unit_price, image_url
         FROM products 
         WHERE is_active = 1
     """)
@@ -52,6 +52,7 @@ def get_stats():
                 "sku": p["sku"],
                 "name": p["name"],
                 "unit": p["unit"],
+                "image_url": p.get("image_url") or "/logo.jpg",
                 "current_stock": curr,
                 "min_stock_alert": min_alt,
                 "is_empty": curr <= 0

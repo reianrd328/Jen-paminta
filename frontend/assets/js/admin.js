@@ -116,9 +116,12 @@ async function loadDashboard() {
     if (res.low_stock_alerts && res.low_stock_alerts.length > 0) {
       alertsContainer.innerHTML = res.low_stock_alerts.map(item => `
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0; border-bottom: 1px dashed var(--border-parchment);">
-          <div>
-            <strong>${item.name}</strong>
-            <div style="font-size: 0.775rem; color: var(--text-muted);">SKU: ${item.sku}</div>
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <img src="${item.image_url || '/logo.jpg'}" onerror="this.src='/logo.jpg'" alt="${item.name}" style="width: 34px; height: 34px; border-radius: 4px; object-fit: cover; border: 1px solid var(--border-gold); background: #FAF7F2; flex-shrink: 0;" />
+            <div>
+              <strong>${item.name}</strong>
+              <div style="font-size: 0.775rem; color: var(--text-muted);">SKU: ${item.sku}</div>
+            </div>
           </div>
           <div style="text-align: right;">
             <span class="badge ${item.is_empty ? 'badge-out-of-stock' : 'badge-low-stock'}">
@@ -206,9 +209,14 @@ async function loadInventoryLedger() {
               ✏️ ${item.sku}
             </strong>
           </td>
-          <td style="cursor: pointer;" onclick="openEditProductModal(${item.product_id})" title="Click to customize item description">
-            <strong style="color: var(--color-vine-dark);">${item.name}</strong>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">${item.category_name}</div>
+          <td style="cursor: pointer;" onclick="openEditProductModal(${item.product_id})" title="Click to customize SKU, description & photo">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <img src="${item.image_url || '/logo.jpg'}" onerror="this.src='/logo.jpg'" alt="${item.name}" style="width: 38px; height: 38px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-gold); flex-shrink: 0; background: #FAF7F2;" />
+              <div>
+                <strong style="color: var(--color-vine-dark);">${item.name}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${item.category_name}</div>
+              </div>
+            </div>
           </td>
           <td>${item.unit}</td>
           <td><strong>${API.formatCurrency(item.unit_price)}</strong></td>
@@ -284,11 +292,14 @@ function renderPOSCatalog(products) {
     const isOut = p.current_stock <= 0;
     return `
       <div class="pos-item-tile ${isOut ? 'disabled' : ''}" onclick="${isOut ? '' : `addToPOSCart(${p.id})`}">
-        <div>
-          <div style="font-size: 0.725rem; color: var(--color-gold-deep); font-weight: 600;">${p.sku}</div>
-          <div style="font-family: var(--font-serif-display); font-size: 0.95rem; font-weight: 700; color: var(--color-vine-dark); margin: 0.2rem 0;">${p.name}</div>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+          <img src="${p.image_url || '/logo.jpg'}" onerror="this.src='/logo.jpg'" alt="${p.name}" style="width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-gold); flex-shrink: 0; background: #FAF7F2;" />
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-size: 0.725rem; color: var(--color-gold-deep); font-weight: 600;">${p.sku}</div>
+            <div style="font-family: var(--font-serif-display); font-size: 0.92rem; font-weight: 700; color: var(--color-vine-dark); margin: 0.15rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.name}</div>
+          </div>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 0.65rem;">
           <div style="font-size: 1.05rem; font-weight: 700; color: var(--color-vine-primary);">${API.formatCurrency(p.unit_price)}</div>
           <span class="badge ${isOut ? 'badge-out-of-stock' : (p.current_stock <= p.min_stock_alert ? 'badge-low-stock' : 'badge-in-stock')}">
             ${isOut ? 'Out of Stock' : `${p.current_stock} ${p.unit}`}
@@ -482,6 +493,76 @@ function openSetBegModal(productId, currentBeg) {
   document.getElementById('modal-set-beg').classList.add('active');
 }
 
+// Image Upload & Optimization (Client-side HTML5 Canvas Compression)
+function handleProductImageSelect(event, previewImgId, hiddenUrlInputId) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    API.toast('Please select an image file (JPG, PNG, WebP)', 'warning');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      // Compress to max 800x800 for crystal-clear clarity while keeping base64 light (~40-80KB)
+      const maxDim = 800;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        }
+      } else {
+        if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+      const previewEl = document.getElementById(previewImgId);
+      if (previewEl) previewEl.src = compressedDataUrl;
+
+      const urlInput = document.getElementById(hiddenUrlInputId);
+      if (urlInput) urlInput.value = compressedDataUrl;
+
+      API.toast('Photo loaded and optimized successfully!', 'success');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function previewManualUrl(url, previewImgId) {
+  const previewEl = document.getElementById(previewImgId);
+  if (previewEl) {
+    previewEl.src = url.trim() || '/logo.jpg';
+  }
+}
+
+function resetProductImage(previewImgId, hiddenUrlInputId, fileInputId) {
+  const previewEl = document.getElementById(previewImgId);
+  if (previewEl) previewEl.src = '/logo.jpg';
+
+  const urlInput = document.getElementById(hiddenUrlInputId);
+  if (urlInput) urlInput.value = '';
+
+  const fileInput = document.getElementById(fileInputId);
+  if (fileInput) fileInput.value = '';
+}
+
 function openEditProductModal(productId) {
   const prod = allProducts.find(p => p.id === productId);
   if (!prod) return;
@@ -496,6 +577,13 @@ function openEditProductModal(productId) {
   document.getElementById('edit-prod-alert').value = prod.min_stock_alert || 10;
   document.getElementById('edit-prod-desc').value = prod.description || '';
 
+  // Image preview & URL input
+  const imgUrl = prod.image_url || '';
+  document.getElementById('edit-prod-img-url').value = imgUrl;
+  document.getElementById('edit-prod-img-preview').src = imgUrl || '/logo.jpg';
+  const fileInput = document.getElementById('edit-prod-file-input');
+  if (fileInput) fileInput.value = '';
+
   document.getElementById('modal-edit-product').classList.add('active');
 }
 
@@ -509,6 +597,7 @@ async function submitEditProduct() {
   const cost = parseFloat(document.getElementById('edit-prod-cost').value || 0);
   const minAlert = parseFloat(document.getElementById('edit-prod-alert').value || 10);
   const desc = document.getElementById('edit-prod-desc').value.trim();
+  const imageUrl = document.getElementById('edit-prod-img-url').value.trim() || '/logo.jpg';
 
   if (!name || !sku) {
     API.toast('Product name and SKU are required', 'warning');
@@ -520,7 +609,8 @@ async function submitEditProduct() {
       name, sku, category_id: categoryId, unit,
       unit_price: price, cost_price: cost,
       min_stock_alert: minAlert,
-      description: desc
+      description: desc,
+      image_url: imageUrl
     });
     if (res.success) {
       API.toast(res.message, 'success');
@@ -681,6 +771,7 @@ async function submitNewProduct() {
   const begStock = parseFloat(document.getElementById('new-prod-beg').value || 0);
   const minAlert = parseFloat(document.getElementById('new-prod-alert').value || 10);
   const desc = document.getElementById('new-prod-desc').value;
+  const imageUrl = document.getElementById('new-prod-img-url').value.trim() || '/logo.jpg';
 
   if (!name) {
     API.toast('Product name is required', 'warning');
@@ -692,12 +783,14 @@ async function submitNewProduct() {
       name, sku, category_id: categoryId, unit,
       unit_price: price, cost_price: cost,
       beginning_stock: begStock, min_stock_alert: minAlert,
-      description: desc
+      description: desc,
+      image_url: imageUrl
     });
     if (res.success) {
       API.toast(res.message, 'success');
       closeModal('modal-new-product');
       document.getElementById('form-new-product').reset();
+      resetProductImage('new-prod-img-preview', 'new-prod-img-url', 'new-prod-file-input');
       loadInitialData();
       loadInventoryLedger();
     }
