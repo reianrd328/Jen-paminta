@@ -404,6 +404,11 @@ def seed_initial_data(conn, is_mysql):
                 (cat_name, cat_desc)
             )
 
+    # Check if seed products were already initialized or cleared
+    cursor.execute(f"SELECT setting_value FROM settings WHERE setting_key = {placeholder}", ("seed_data_initialized",))
+    if cursor.fetchone():
+        return
+
     # 3. Seed Products with Beginning Stock
     products = [
         ("PAM-BLK-500", "Paminta Whole Black Peppercorns (500g)", "Paminta & Whole Spices", "pouch", 290.00, 170.00, 120.00, 20.00, "Sun-dried whole black peppercorns, aromatic and richly pungent.", "/assets/images/logo.jpg"),
@@ -453,7 +458,8 @@ def seed_initial_data(conn, is_mysql):
         ("contact_phone", "+63 917 123 4567"),
         ("address", "Paminta Estate & Vineyards, Philippines"),
         ("currency_symbol", "₱"),
-        ("tax_rate", "0.00")
+        ("tax_rate", "0.00"),
+        ("seed_data_initialized", "true")
     ]
     for key, val in default_settings:
         cursor.execute(f"SELECT id FROM settings WHERE setting_key = {placeholder}", (key,))

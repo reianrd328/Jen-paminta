@@ -118,6 +118,14 @@ def update_product(product_id):
     description = data.get("description", product["description"]).strip()
     image_url = data.get("image_url", product.get("image_url", "/assets/images/logo.jpg"))
 
+    if not name or not sku:
+        return jsonify({"success": False, "message": "Product name and SKU are required"}), 400
+
+    if sku != product["sku"]:
+        existing = DB.fetch_one("SELECT id FROM products WHERE sku = %s AND id != %s", (sku, product_id))
+        if existing:
+            return jsonify({"success": False, "message": f"SKU '{sku}' is already assigned to another product"}), 400
+
     DB.execute_query("""
         UPDATE products SET 
         name = %s, sku = %s, category_id = %s, unit = %s, unit_price = %s, 
@@ -125,7 +133,7 @@ def update_product(product_id):
         WHERE id = %s
     """, (name, sku, category_id, unit, unit_price, cost_price, min_stock_alert, description, image_url, product_id), commit=True)
 
-    return jsonify({"success": True, "message": "Product updated successfully"})
+    return jsonify({"success": True, "message": f"Product '{name}' updated successfully"})
 
 @products_bp.route("/<int:product_id>", methods=["DELETE"])
 def delete_product(product_id):

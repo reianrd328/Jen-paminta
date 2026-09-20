@@ -201,9 +201,13 @@ async function loadInventoryLedger() {
 
       return `
         <tr>
-          <td><strong style="color: var(--color-vine-dark);">${item.sku}</strong></td>
           <td>
-            <strong>${item.name}</strong>
+            <strong style="color: var(--color-vine-dark); cursor: pointer;" onclick="openEditProductModal(${item.product_id})" title="Click to customize SKU & details">
+              ✏️ ${item.sku}
+            </strong>
+          </td>
+          <td style="cursor: pointer;" onclick="openEditProductModal(${item.product_id})" title="Click to customize item description">
+            <strong style="color: var(--color-vine-dark);">${item.name}</strong>
             <div style="font-size: 0.75rem; color: var(--text-muted);">${item.category_name}</div>
           </td>
           <td>${item.unit}</td>
@@ -228,7 +232,8 @@ async function loadInventoryLedger() {
           </td>
           <td><span class="badge ${badgeClass}">${statusText}</span></td>
           <td>
-            <div style="display: flex; gap: 0.35rem;">
+            <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+              <button class="btn btn-sm" style="background: #EBF3EE; color: var(--color-vine-primary); border: 1px solid var(--color-vine-primary); font-weight: 700;" title="Customize SKU, Description, Unit, Price" onclick="openEditProductModal(${item.product_id})">✏️ Edit</button>
               <button class="btn btn-gold btn-sm" title="Add Stock / Restock" onclick="openAddStockModal(${item.product_id})">+ Add</button>
               <button class="btn btn-outline-vine btn-sm" title="Less / Deduct Damaged Stock" onclick="openLessStockModal(${item.product_id})">- Less</button>
               <button class="btn btn-sm" style="background: var(--bg-parchment); border: 1px solid var(--border-parchment);" title="Set Beginning Stock" onclick="openSetBegModal(${item.product_id}, ${item.beginning_stock})">⚙️ Beg</button>
@@ -475,6 +480,107 @@ function openSetBegModal(productId, currentBeg) {
     document.getElementById('set-beg-qty').value = currentBeg;
   }
   document.getElementById('modal-set-beg').classList.add('active');
+}
+
+function openEditProductModal(productId) {
+  const prod = allProducts.find(p => p.id === productId);
+  if (!prod) return;
+
+  document.getElementById('edit-prod-id').value = prod.id;
+  document.getElementById('edit-prod-name').value = prod.name;
+  document.getElementById('edit-prod-sku').value = prod.sku;
+  document.getElementById('edit-prod-category').value = prod.category_id || 1;
+  document.getElementById('edit-prod-unit').value = prod.unit || 'pack';
+  document.getElementById('edit-prod-price').value = prod.unit_price;
+  document.getElementById('edit-prod-cost').value = prod.cost_price || 0;
+  document.getElementById('edit-prod-alert').value = prod.min_stock_alert || 10;
+  document.getElementById('edit-prod-desc').value = prod.description || '';
+
+  document.getElementById('modal-edit-product').classList.add('active');
+}
+
+async function submitEditProduct() {
+  const prodId = parseInt(document.getElementById('edit-prod-id').value);
+  const name = document.getElementById('edit-prod-name').value.trim();
+  const sku = document.getElementById('edit-prod-sku').value.trim().toUpperCase();
+  const categoryId = parseInt(document.getElementById('edit-prod-category').value);
+  const unit = document.getElementById('edit-prod-unit').value.trim();
+  const price = parseFloat(document.getElementById('edit-prod-price').value || 0);
+  const cost = parseFloat(document.getElementById('edit-prod-cost').value || 0);
+  const minAlert = parseFloat(document.getElementById('edit-prod-alert').value || 10);
+  const desc = document.getElementById('edit-prod-desc').value.trim();
+
+  if (!name || !sku) {
+    API.toast('Product name and SKU are required', 'warning');
+    return;
+  }
+
+  try {
+    const res = await API.put(`/api/products/${prodId}`, {
+      name, sku, category_id: categoryId, unit,
+      unit_price: price, cost_price: cost,
+      min_stock_alert: minAlert,
+      description: desc
+    });
+    if (res.success) {
+      API.toast(res.message, 'success');
+      closeModal('modal-edit-product');
+      loadInitialData();
+      loadInventoryLedger();
+    }
+  } catch (err) {
+    console.error('Edit product error', err);
+  }
+}
+
+async function deleteCurrentProduct() {
+  const prodId = parseInt(document.getElementById('edit-prod-id').value);
+  const prod = allProducts.find(p => p.id === prodId);
+  const name = prod ? prod.name : 'this item';
+
+  if (!confirm(`Are you sure you want to remove '${name}' from your active catalog?`)) {
+    return;
+  }
+
+  try {
+    const res = await API.delete(`/api/products/${prodId}`);
+    if (res.success) {
+      API.toast(res.message, 'success');
+      closeModal('modal-edit-product');
+      loadInitialData();
+      loadInventoryLedger();
+    }
+  } catch (err) {
+    console.error('Delete product error', err);
+  }
+}
+
+async function handleResetAllRecords() {
+  const answer = prompt(
+    "WARNING: This will CLEAR ALL products, stock movements, and sales records so you can start fresh with your own stock.\n\nType 'CONFIRM' to clear all records:"
+  );
+
+  if (answer !== 'CONFIRM') {
+    if (answer !== null) {
+      API.toast("Reset cancelled. You must type 'CONFIRM' to wipe records.", 'info');
+    }
+    return;
+  }
+
+  try {
+    const res = await API.post('/api/inventory/reset-records', {});
+    if (res.success) {
+      API.toast(res.message, 'success');
+      allProducts = [];
+      posCart = [];
+      loadInitialData();
+      loadInventoryLedger();
+      loadDashboard();
+      initPOS();
+    }
+  } catch (err) {
+    console.error('Reset records error', err);
+  }
 }
 
 function closeModal(modalId) {

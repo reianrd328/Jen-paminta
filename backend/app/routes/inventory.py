@@ -276,3 +276,29 @@ def get_movements():
     movements = DB.fetch_all(query, tuple(params))
     return jsonify({"success": True, "movements": movements})
 
+@inventory_bp.route("/reset-records", methods=["POST"])
+def reset_records():
+    """
+    Clears all products, inventory movements, inventory snapshots, sales, and sale items.
+    Leaves user accounts, categories, and settings intact.
+    Marks seed_data_initialized = 'true' so demo products won't return.
+    """
+    DB.execute_query("DELETE FROM sale_items", commit=True)
+    DB.execute_query("DELETE FROM sales", commit=True)
+    DB.execute_query("DELETE FROM inventory_movements", commit=True)
+    DB.execute_query("DELETE FROM inventory_snapshots", commit=True)
+    DB.execute_query("DELETE FROM products", commit=True)
+
+    # Ensure seed_data_initialized is set
+    existing = DB.fetch_one("SELECT id FROM settings WHERE setting_key = %s", ("seed_data_initialized",))
+    if existing:
+        DB.execute_query("UPDATE settings SET setting_value = 'true' WHERE setting_key = %s", ("seed_data_initialized",), commit=True)
+    else:
+        DB.execute_query("INSERT INTO settings (setting_key, setting_value) VALUES (%s, 'true')", ("seed_data_initialized",), commit=True)
+
+    return jsonify({
+        "success": True,
+        "message": "All product records, stock movements, and sales history have been cleared. You now have a clean slate to add your stock!"
+    })
+
+
