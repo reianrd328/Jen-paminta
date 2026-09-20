@@ -655,4 +655,31 @@
   }
 }
 
+/* Unit Choices Pills */
+.btn-unit-pill {
+  background: #FFFFFF;
+  border: 1px solid var(--border-gold);
+  color: var(--color-vine-dark);
+  font-size: 0.775rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.btn-unit-pill:hover {
+  background: var(--color-gold-pale);
+  border-color: var(--color-gold-deep);
+}
+.btn-unit-pill.active {
+  background: var(--color-vine-primary);
+  border-color: var(--color-vine-primary);
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(39, 74, 57, 0.25);
+}
+
+
 

@@ -633,7 +633,8 @@ function openSetBegModal(productId, currentBeg) {
   document.getElementById('set-beg-prod-id').value = productId;
   const prod = allProducts.find(p => p.id === productId);
   if (prod) {
-    document.getElementById('set-beg-prod-name').innerText = prod.name;
+    document.getElementById('set-beg-prod-name').innerText = `${prod.name} (Unit: ${prod.unit})`;
+    document.getElementById('set-beg-qty').placeholder = `Count in ${prod.unit}`;
     document.getElementById('set-beg-qty').value = currentBeg;
   }
   document.getElementById('modal-set-beg').classList.add('active');
@@ -709,6 +710,60 @@ function resetProductImage(previewImgId, hiddenUrlInputId, fileInputId) {
   if (fileInput) fileInput.value = '';
 }
 
+// Unit of measure choices & synchronization (kilo, grams, pack, pouch, etc.)
+function selectProductUnit(unitVal, prefix) {
+  const unitInput = document.getElementById(`${prefix}-unit`);
+  const begSelect = document.getElementById(`${prefix}-beg-unit-select`);
+  const alertSelect = document.getElementById(`${prefix}-alert-unit-select`);
+
+  if (unitVal === 'custom') {
+    const custom = prompt("Enter custom unit of measure (e.g. jar, basket, tray, 250g pack):", unitInput ? unitInput.value : '');
+    if (custom && custom.trim()) {
+      if (unitInput) unitInput.value = custom.trim();
+      updateUnitLabels(custom.trim(), prefix);
+      if (begSelect) begSelect.value = 'custom';
+      if (alertSelect) alertSelect.value = 'custom';
+    }
+    return;
+  }
+
+  if (unitInput) unitInput.value = unitVal;
+  if (begSelect) begSelect.value = unitVal;
+  if (alertSelect) alertSelect.value = unitVal;
+
+  updateUnitLabels(unitVal, prefix);
+}
+
+function syncUnitFromSelect(unitVal, prefix) {
+  selectProductUnit(unitVal, prefix);
+}
+
+function updateUnitLabels(unitText, prefix) {
+  const displayUnit = unitText ? unitText.trim() : 'unit';
+
+  // Update all label text spans for this modal prefix
+  document.querySelectorAll(`.unit-label-text-${prefix}`).forEach(el => {
+    el.innerText = displayUnit;
+  });
+
+  // Sync select elements if value matches one of the options
+  const begSelect = document.getElementById(`${prefix}-beg-unit-select`);
+  const alertSelect = document.getElementById(`${prefix}-alert-unit-select`);
+  const standardUnits = ['kilo', 'grams', 'pack', 'pouch', 'sack', 'bottle'];
+
+  const matchedVal = standardUnits.includes(displayUnit.toLowerCase()) ? displayUnit.toLowerCase() : 'custom';
+  if (begSelect) begSelect.value = matchedVal;
+  if (alertSelect) alertSelect.value = matchedVal;
+
+  // Sync pills active state
+  const modalBox = document.getElementById(prefix === 'new-prod' ? 'modal-new-product' : 'modal-edit-product');
+  if (modalBox) {
+    modalBox.querySelectorAll('.btn-unit-pill').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.unit === displayUnit.toLowerCase());
+    });
+  }
+}
+
 function openEditProductModal(productId) {
   const prod = allProducts.find(p => p.id === productId);
   if (!prod) return;
@@ -717,11 +772,14 @@ function openEditProductModal(productId) {
   document.getElementById('edit-prod-name').value = prod.name;
   document.getElementById('edit-prod-sku').value = prod.sku;
   document.getElementById('edit-prod-category').value = prod.category_id || 1;
-  document.getElementById('edit-prod-unit').value = prod.unit || 'pack';
+  document.getElementById('edit-prod-unit').value = prod.unit || 'kilo';
   document.getElementById('edit-prod-price').value = prod.unit_price;
   document.getElementById('edit-prod-cost').value = prod.cost_price || 0;
   document.getElementById('edit-prod-alert').value = prod.min_stock_alert || 10;
   document.getElementById('edit-prod-desc').value = prod.description || '';
+
+  // Synchronize unit choices and dynamic labels
+  updateUnitLabels(prod.unit || 'kilo', 'edit-prod');
 
   // Image preview & URL input
   const imgUrl = prod.image_url || '';
@@ -937,6 +995,7 @@ async function submitNewProduct() {
       closeModal('modal-new-product');
       document.getElementById('form-new-product').reset();
       resetProductImage('new-prod-img-preview', 'new-prod-img-url', 'new-prod-file-input');
+      selectProductUnit('kilo', 'new-prod');
       loadInitialData();
       loadInventoryLedger();
     }

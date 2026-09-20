@@ -506,23 +506,46 @@
               </div>
             </div>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
-            <div class="form-group">
-              <label class="form-label">Unit</label>
-              <input type="text" id="edit-prod-unit" class="form-control" placeholder="bottle, pack, kg" required />
+          <!-- Unit of Measure Choices -->
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label class="form-label" style="font-weight: 600; margin-bottom: 0.35rem; display: block;">Unit of Measure (Choices):</label>
+            <div class="unit-pills" style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+              <button type="button" class="btn-unit-pill" data-unit="kilo" onclick="selectProductUnit('kilo', 'edit-prod')">⚖️ kilo (kg)</button>
+              <button type="button" class="btn-unit-pill" data-unit="grams" onclick="selectProductUnit('grams', 'edit-prod')">🔬 grams (g)</button>
+              <button type="button" class="btn-unit-pill" data-unit="pack" onclick="selectProductUnit('pack', 'edit-prod')">📦 pack</button>
+              <button type="button" class="btn-unit-pill" data-unit="pouch" onclick="selectProductUnit('pouch', 'edit-prod')">🛍️ pouch</button>
+              <button type="button" class="btn-unit-pill" data-unit="sack" onclick="selectProductUnit('sack', 'edit-prod')">🌾 sack</button>
+              <button type="button" class="btn-unit-pill" data-unit="bottle" onclick="selectProductUnit('bottle', 'edit-prod')">🍾 bottle</button>
+              <button type="button" class="btn-unit-pill" data-unit="custom" onclick="selectProductUnit('custom', 'edit-prod')">✏️ Other...</button>
             </div>
+            <input type="text" id="edit-prod-unit" class="form-control" style="margin-top: 0.45rem; font-weight: 600;" placeholder="Unit (kilo, grams, pack...)" oninput="updateUnitLabels(this.value, 'edit-prod')" required />
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
             <div class="form-group">
-              <label class="form-label">Cost Price (₱)</label>
+              <label class="form-label">Cost Price (₱ / <span class="unit-label-text-edit-prod">unit</span>)</label>
               <input type="number" id="edit-prod-cost" class="form-control" step="0.5" min="0" />
             </div>
             <div class="form-group">
-              <label class="form-label">Selling Price (₱) *</label>
+              <label class="form-label">Selling Price (₱ / <span class="unit-label-text-edit-prod">unit</span>) *</label>
               <input type="number" id="edit-prod-price" class="form-control" step="0.5" min="0" required />
             </div>
           </div>
+
           <div class="form-group">
-            <label class="form-label">Low Stock Alert Level</label>
-            <input type="number" id="edit-prod-alert" class="form-control" step="1" min="1" />
+            <label class="form-label">Low Stock Alert Level (<span class="unit-label-text-edit-prod">unit</span>)</label>
+            <div style="display: flex;">
+              <input type="number" id="edit-prod-alert" class="form-control" step="0.1" min="0" style="border-top-right-radius: 0; border-bottom-right-radius: 0;" />
+              <select id="edit-prod-alert-unit-select" class="form-control" style="width: 105px; border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; background: #FAF7F2; font-weight: 600; cursor: pointer;" onchange="syncUnitFromSelect(this.value, 'edit-prod')">
+                <option value="kilo">kilo (kg)</option>
+                <option value="grams">grams (g)</option>
+                <option value="pack">pack</option>
+                <option value="pouch">pouch</option>
+                <option value="sack">sack</option>
+                <option value="bottle">bottle</option>
+                <option value="custom">Other...</option>
+              </select>
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label">Description / Tasting Notes</label>
@@ -555,7 +578,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Quantity to Add *</label>
-            <input type="number" id="add-stock-qty" class="form-control" step="0.5" min="0.1" placeholder="e.g. 50" required />
+            <input type="number" id="add-stock-qty" class="form-control" step="any" min="0.001" placeholder="e.g. 50" required />
           </div>
           <div class="form-group">
             <label class="form-label">Reference ID / Delivery Receipt #</label>
@@ -589,7 +612,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Quantity to Deduct *</label>
-            <input type="number" id="less-stock-qty" class="form-control" step="0.5" min="0.1" placeholder="e.g. 5" required />
+            <input type="number" id="less-stock-qty" class="form-control" step="any" min="0.001" placeholder="e.g. 5" required />
           </div>
           <div class="form-group">
             <label class="form-label">Deduction Reason *</label>
@@ -632,7 +655,7 @@
         </p>
         <div class="form-group">
           <label class="form-label">New Beginning Stock Count</label>
-          <input type="number" id="set-beg-qty" class="form-control" step="0.5" min="0" />
+          <input type="number" id="set-beg-qty" class="form-control" step="any" min="0" />
         </div>
         <div class="form-group">
           <label class="form-label">Reason / Notes</label>
@@ -700,28 +723,62 @@
               </div>
             </div>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
-            <div class="form-group">
-              <label class="form-label">Unit of Measure</label>
-              <input type="text" id="new-prod-unit" class="form-control" placeholder="pouch, kg, bottle" value="pack" />
+          <!-- Unit of Measure Choices -->
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label class="form-label" style="font-weight: 600; margin-bottom: 0.35rem; display: block;">Unit of Measure (Choices):</label>
+            <div class="unit-pills" style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+              <button type="button" class="btn-unit-pill active" data-unit="kilo" onclick="selectProductUnit('kilo', 'new-prod')">⚖️ kilo (kg)</button>
+              <button type="button" class="btn-unit-pill" data-unit="grams" onclick="selectProductUnit('grams', 'new-prod')">🔬 grams (g)</button>
+              <button type="button" class="btn-unit-pill" data-unit="pack" onclick="selectProductUnit('pack', 'new-prod')">📦 pack</button>
+              <button type="button" class="btn-unit-pill" data-unit="pouch" onclick="selectProductUnit('pouch', 'new-prod')">🛍️ pouch</button>
+              <button type="button" class="btn-unit-pill" data-unit="sack" onclick="selectProductUnit('sack', 'new-prod')">🌾 sack</button>
+              <button type="button" class="btn-unit-pill" data-unit="bottle" onclick="selectProductUnit('bottle', 'new-prod')">🍾 bottle</button>
+              <button type="button" class="btn-unit-pill" data-unit="custom" onclick="selectProductUnit('custom', 'new-prod')">✏️ Other...</button>
             </div>
-            <div class="form-group">
-              <label class="form-label">Cost Price (₱)</label>
-              <input type="number" id="new-prod-cost" class="form-control" step="0.5" placeholder="0.00" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Selling Price (₱) *</label>
-              <input type="number" id="new-prod-price" class="form-control" step="0.5" placeholder="0.00" required />
-            </div>
+            <input type="text" id="new-prod-unit" class="form-control" value="kilo" style="margin-top: 0.45rem; font-weight: 600;" placeholder="Unit (kilo, grams, pack...)" oninput="updateUnitLabels(this.value, 'new-prod')" required />
           </div>
+
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
             <div class="form-group">
-              <label class="form-label">Beginning Stock Count</label>
-              <input type="number" id="new-prod-beg" class="form-control" step="0.5" placeholder="Initial stock" value="50" />
+              <label class="form-label">Cost Price (₱ / <span class="unit-label-text-new-prod">kilo</span>)</label>
+              <input type="number" id="new-prod-cost" class="form-control" step="0.5" min="0" placeholder="0.00" />
             </div>
             <div class="form-group">
-              <label class="form-label">Low Stock Alert Level</label>
-              <input type="number" id="new-prod-alert" class="form-control" step="1" value="10" />
+              <label class="form-label">Selling Price (₱ / <span class="unit-label-text-new-prod">kilo</span>) *</label>
+              <input type="number" id="new-prod-price" class="form-control" step="0.5" min="0" placeholder="0.00" required />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label">Beginning Stock Count (<span class="unit-label-text-new-prod">kilo</span>)</label>
+              <div style="display: flex;">
+                <input type="number" id="new-prod-beg" class="form-control" step="0.1" min="0" placeholder="Initial count" value="50" style="border-top-right-radius: 0; border-bottom-right-radius: 0;" />
+                <select id="new-prod-beg-unit-select" class="form-control" style="width: 105px; border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; background: #FAF7F2; font-weight: 600; cursor: pointer;" onchange="syncUnitFromSelect(this.value, 'new-prod')">
+                  <option value="kilo" selected>kilo (kg)</option>
+                  <option value="grams">grams (g)</option>
+                  <option value="pack">pack</option>
+                  <option value="pouch">pouch</option>
+                  <option value="sack">sack</option>
+                  <option value="bottle">bottle</option>
+                  <option value="custom">Other...</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Low Stock Alert Level (<span class="unit-label-text-new-prod">kilo</span>)</label>
+              <div style="display: flex;">
+                <input type="number" id="new-prod-alert" class="form-control" step="0.1" min="0" value="10" style="border-top-right-radius: 0; border-bottom-right-radius: 0;" />
+                <select id="new-prod-alert-unit-select" class="form-control" style="width: 105px; border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; background: #FAF7F2; font-weight: 600; cursor: pointer;" onchange="syncUnitFromSelect(this.value, 'new-prod')">
+                  <option value="kilo" selected>kilo (kg)</option>
+                  <option value="grams">grams (g)</option>
+                  <option value="pack">pack</option>
+                  <option value="pouch">pouch</option>
+                  <option value="sack">sack</option>
+                  <option value="bottle">bottle</option>
+                  <option value="custom">Other...</option>
+                </select>
+              </div>
             </div>
           </div>
           <div class="form-group">
