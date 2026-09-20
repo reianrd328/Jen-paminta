@@ -51,12 +51,41 @@ def get_product(product_id):
         return jsonify({"success": False, "message": "Product not found"}), 404
     return jsonify({"success": True, "product": product})
 
+def resolve_category(category_id=None, category_name=None):
+    """Find or auto-create a category by name or ID"""
+    if category_name and str(category_name).strip():
+        c_name = str(category_name).strip()
+        existing = DB.fetch_one("SELECT id FROM categories WHERE LOWER(name) = LOWER(%s)", (c_name,))
+        if existing:
+            return existing["id"]
+        res = DB.execute_query("INSERT INTO categories (name) VALUES (%s)", (c_name,), commit=True)
+        return res.get("last_id")
+
+    if category_id is not None:
+        try:
+            cat_int = int(category_id)
+            if cat_int > 0:
+                cat = DB.fetch_one("SELECT id FROM categories WHERE id = %s", (cat_int,))
+                if cat:
+                    return cat["id"]
+        except (ValueError, TypeError):
+            c_name = str(category_id).strip()
+            if c_name:
+                existing = DB.fetch_one("SELECT id FROM categories WHERE LOWER(name) = LOWER(%s)", (c_name,))
+                if existing:
+                    return existing["id"]
+                res = DB.execute_query("INSERT INTO categories (name) VALUES (%s)", (c_name,), commit=True)
+                return res.get("last_id")
+
+    first = DB.fetch_one("SELECT id FROM categories ORDER BY id ASC LIMIT 1")
+    return first["id"] if first else 1
+
 @products_bp.route("", methods=["POST"])
 def create_product():
     data = request.get_json() or {}
     name = (data.get("name") or "").strip()
     sku = (data.get("sku") or "").strip().upper()
-    category_id = data.get("category_id")
+    category_id = resolve_category(data.get("category_id"), data.get("category_name"))
     unit = data.get("unit", "pack").strip()
     unit_price = float(data.get("unit_price") or 0.0)
     cost_price = float(data.get("cost_price") or 0.0)
@@ -110,7 +139,7 @@ def update_product(product_id):
     data = request.get_json() or {}
     name = data.get("name", product["name"]).strip()
     sku = data.get("sku", product["sku"]).strip().upper()
-    category_id = data.get("category_id", product["category_id"])
+    category_id = resolve_category(data.get("category_id", product["category_id"]), data.get("category_name"))
     unit = data.get("unit", product["unit"]).strip()
     unit_price = float(data.get("unit_price", product["unit_price"]))
     cost_price = float(data.get("cost_price", product["cost_price"]))

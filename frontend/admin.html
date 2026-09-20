@@ -201,11 +201,7 @@
           <div style="width: 220px;">
             <select id="ledger-category-filter" class="form-control">
               <option value="">All Categories</option>
-              <option value="1">Paminta & Whole Spices</option>
-              <option value="2">Ground & Blended Spices</option>
-              <option value="3">Estate Wines & Cellar Reserve</option>
-              <option value="4">Fresh Harvest & Table Grapes</option>
-              <option value="5">Heritage Gift Packs</option>
+              <!-- Dynamically populated -->
             </select>
           </div>
           <button class="btn btn-outline-vine" onclick="loadInventoryLedger()">↻ Refresh Ledger</button>
@@ -415,6 +411,31 @@
           <button class="btn btn-primary" onclick="saveSettings()">Save Business Settings</button>
         </div>
 
+        <div class="card" style="padding: 1.5rem; margin-top: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <h3 style="font-size: 1.15rem;">🏷️ Custom Product Categories</h3>
+              <p style="color: var(--text-muted); font-size: 0.825rem; margin: 0;">Add, rename, or customize categories for your Paminta harvest and estate catalog.</p>
+            </div>
+            <button class="btn btn-gold btn-sm" onclick="promptAddNewCategoryFromSettings()">+ Add New Category</button>
+          </div>
+          <div class="table-container" style="max-height: 280px; overflow-y: auto;">
+            <table class="custom-table" style="font-size: 0.875rem;">
+              <thead>
+                <tr>
+                  <th>Category Name</th>
+                  <th>Description</th>
+                  <th style="text-align: center;">Active Products</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="category-manager-tbody">
+                <tr><td colspan="4" style="text-align: center; padding: 1.5rem;">Loading categories...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div class="card" style="padding: 1.5rem; margin-top: 1.5rem; border: 1px solid #FFCDD2; background: #FFF9F9;">
           <h3 style="font-size: 1.15rem; color: #C62828; margin-bottom: 0.5rem;">⚠️ Danger Zone: Stock Reset</h3>
           <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
@@ -471,14 +492,18 @@
               <input type="text" id="edit-prod-sku" class="form-control" required />
             </div>
             <div class="form-group">
-              <label class="form-label">Category</label>
-              <select id="edit-prod-category" class="form-control">
-                <option value="1">Paminta & Whole Spices</option>
-                <option value="2">Ground & Blended Spices</option>
-                <option value="3">Estate Wines & Cellar Reserve</option>
-                <option value="4">Fresh Harvest & Table Grapes</option>
-                <option value="5">Heritage Gift Packs</option>
-              </select>
+              <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Category *</span>
+                <a href="javascript:void(0)" onclick="quickAddCategory('edit-prod-category')" style="font-size: 0.75rem; color: var(--color-vine-primary); text-decoration: underline; font-weight: 600;">+ New</a>
+              </label>
+              <div style="display: flex; gap: 0.4rem;">
+                <select id="edit-prod-category" class="form-control" style="flex-grow: 1;">
+                  <!-- Dynamically populated from API -->
+                </select>
+                <button type="button" class="btn btn-outline-vine btn-sm" onclick="quickAddCategory('edit-prod-category')" title="Create a new custom category" style="padding: 0.35rem 0.55rem; white-space: nowrap;">
+                  ➕
+                </button>
+              </div>
             </div>
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
@@ -661,14 +686,18 @@
               <input type="text" id="new-prod-sku" class="form-control" placeholder="e.g. PAM-BLK-250" />
             </div>
             <div class="form-group">
-              <label class="form-label">Category</label>
-              <select id="new-prod-category" class="form-control">
-                <option value="1">Paminta & Whole Spices</option>
-                <option value="2">Ground & Blended Spices</option>
-                <option value="3">Estate Wines & Cellar Reserve</option>
-                <option value="4">Fresh Harvest & Table Grapes</option>
-                <option value="5">Heritage Gift Packs</option>
-              </select>
+              <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Category *</span>
+                <a href="javascript:void(0)" onclick="quickAddCategory('new-prod-category')" style="font-size: 0.75rem; color: var(--color-vine-primary); text-decoration: underline; font-weight: 600;">+ New</a>
+              </label>
+              <div style="display: flex; gap: 0.4rem;">
+                <select id="new-prod-category" class="form-control" style="flex-grow: 1;">
+                  <!-- Dynamically populated from API -->
+                </select>
+                <button type="button" class="btn btn-outline-vine btn-sm" onclick="quickAddCategory('new-prod-category')" title="Create a new custom category" style="padding: 0.35rem 0.55rem; white-space: nowrap;">
+                  ➕
+                </button>
+              </div>
             </div>
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">

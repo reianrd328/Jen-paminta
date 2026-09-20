@@ -85,6 +85,7 @@ function switchTab(tabId) {
 // Data Loaders
 async function loadInitialData() {
   try {
+    await loadCategories();
     const res = await API.get('/api/products');
     if (res.success) {
       allProducts = res.products;
@@ -93,6 +94,151 @@ async function loadInitialData() {
     loadDashboard();
   } catch (err) {
     console.error('Initial load failed', err);
+  }
+}
+
+// ==========================================================================
+// CATEGORY MANAGEMENT (Dynamic & Custom Categories)
+// ==========================================================================
+async function loadCategories() {
+  try {
+    const res = await API.get('/api/categories');
+    if (res.success && res.categories) {
+      allCategories = res.categories;
+      populateCategorySelects();
+      renderCategoryManagerList();
+    }
+  } catch (err) {
+    console.error('Failed to load categories', err);
+  }
+}
+
+function populateCategorySelects(selectedForNew = null, selectedForEdit = null) {
+  const newCatSelect = document.getElementById('new-prod-category');
+  const editCatSelect = document.getElementById('edit-prod-category');
+  const filterCatSelect = document.getElementById('ledger-category-filter');
+
+  const optionsHtml = (allCategories || []).map(c => `
+    <option value="${c.id}">${c.name}</option>
+  `).join('');
+
+  if (newCatSelect) {
+    const currentVal = selectedForNew !== null ? selectedForNew : newCatSelect.value;
+    newCatSelect.innerHTML = optionsHtml;
+    if (currentVal) newCatSelect.value = currentVal;
+  }
+
+  if (editCatSelect) {
+    const currentVal = selectedForEdit !== null ? selectedForEdit : editCatSelect.value;
+    editCatSelect.innerHTML = optionsHtml;
+    if (currentVal) editCatSelect.value = currentVal;
+  }
+
+  if (filterCatSelect) {
+    const currentFilter = filterCatSelect.value;
+    filterCatSelect.innerHTML = `<option value="">All Categories</option>` + optionsHtml;
+    if (currentFilter) filterCatSelect.value = currentFilter;
+  }
+}
+
+async function quickAddCategory(targetSelectId) {
+  const name = prompt("🏷️ Enter new custom category name:\n(e.g., White Pepper, Ground Spices, Special Wine Reserve, Gift Sets)");
+  if (!name || !name.trim()) return;
+
+  try {
+    const res = await API.post('/api/categories', { name: name.trim() });
+    if (res.success) {
+      API.toast(res.message || `Category '${name.trim()}' ready!`, 'success');
+      await loadCategories();
+      const targetSelect = document.getElementById(targetSelectId);
+      if (targetSelect && res.category_id) {
+        targetSelect.value = res.category_id;
+      }
+    }
+  } catch (err) {
+    console.error('Failed to add category', err);
+  }
+}
+
+function renderCategoryManagerList() {
+  const tbody = document.getElementById('category-manager-tbody');
+  if (!tbody) return;
+
+  if (!allCategories || allCategories.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No categories defined yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = allCategories.map(c => `
+    <tr>
+      <td>
+        <strong style="color: var(--color-vine-dark);">${c.name}</strong>
+      </td>
+      <td style="color: var(--text-muted); font-size: 0.8rem;">
+        ${c.description || 'Estate product category'}
+      </td>
+      <td style="text-align: center;">
+        <span class="badge ${c.product_count > 0 ? 'badge-in-stock' : 'badge-paminta'}">
+          ${c.product_count || 0} items
+        </span>
+      </td>
+      <td style="text-align: right; white-space: nowrap;">
+        <button class="btn btn-sm" style="background: var(--bg-parchment); border: 1px solid var(--border-gold); padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="promptRenameCategory(${c.id}, '${c.name.replace(/'/g, "\\'")}')">✏️ Rename</button>
+        <button class="btn btn-danger btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; margin-left: 0.3rem;" onclick="handleDeleteCategory(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.product_count || 0})">🗑️ Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function promptAddNewCategoryFromSettings() {
+  const name = prompt("🏷️ Enter new category name:");
+  if (!name || !name.trim()) return;
+
+  const desc = prompt("Optional description / notes for this category (optional):") || "";
+
+  try {
+    const res = await API.post('/api/categories', { name: name.trim(), description: desc.trim() });
+    if (res.success) {
+      API.toast(res.message, 'success');
+      loadCategories();
+    }
+  } catch (err) {
+    console.error('Failed creating category', err);
+  }
+}
+
+async function promptRenameCategory(catId, currentName) {
+  const newName = prompt(`Rename category '${currentName}' to:`, currentName);
+  if (!newName || !newName.trim() || newName.trim() === currentName) return;
+
+  try {
+    const res = await API.put(`/api/categories/${catId}`, { name: newName.trim() });
+    if (res.success) {
+      API.toast(res.message, 'success');
+      loadCategories();
+      loadInventoryLedger();
+    }
+  } catch (err) {
+    console.error('Failed renaming category', err);
+  }
+}
+
+async function handleDeleteCategory(catId, catName, productCount) {
+  if (productCount > 0) {
+    alert(`Cannot delete '${catName}' because there are ${productCount} active products in this category. Please reassign or edit those products first.`);
+    return;
+  }
+
+  if (!confirm(`Are you sure you want to delete category '${catName}'?`)) return;
+
+  try {
+    const res = await API.delete(`/api/categories/${catId}`);
+    if (res.success) {
+      API.toast(res.message, 'success');
+      loadCategories();
+    }
+  } catch (err) {
+    console.error('Failed deleting category', err);
   }
 }
 
@@ -983,6 +1129,7 @@ async function loadMovements() {
 // 7. SETTINGS & TIDB HEALTH
 async function loadSettingsAndHealth() {
   checkDbHealth();
+  loadCategories();
   try {
     const res = await API.get('/api/settings');
     if (res.success && res.settings) {

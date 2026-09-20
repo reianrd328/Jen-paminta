@@ -10,6 +10,7 @@ from app.routes.inventory import inventory_bp
 from app.routes.sales import sales_bp
 from app.routes.dashboard import dashboard_bp
 from app.routes.settings import settings_bp
+from app.routes.categories import categories_bp
 
 def create_app():
     frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
@@ -38,6 +39,7 @@ def create_app():
     app.register_blueprint(sales_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(settings_bp)
+    app.register_blueprint(categories_bp)
 
     # Serve Frontend Pages
     @app.route("/")

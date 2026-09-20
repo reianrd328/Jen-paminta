@@ -19,11 +19,30 @@ async function loadPublicProducts() {
     const res = await API.get('/api/products');
     if (res.success) {
       publicProducts = res.products;
+      renderCategoryFilterButtons();
       renderProductGrid(publicProducts);
     }
   } catch (err) {
     container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #777;">Unable to load products. Please check back shortly.</div>`;
   }
+}
+
+function renderCategoryFilterButtons() {
+  const container = document.getElementById('public-filter-bar');
+  if (!container) return;
+
+  const categoryNames = new Set();
+  publicProducts.forEach(p => {
+    if (p.category_name) categoryNames.add(p.category_name);
+  });
+
+  if (categoryNames.size === 0) return;
+
+  let buttonsHtml = `<button class="filter-btn active" onclick="filterCategory('ALL', this)">All Items</button>`;
+  categoryNames.forEach(catName => {
+    buttonsHtml += `<button class="filter-btn" onclick="filterCategory('${catName.replace(/'/g, "\\'")}', this)">${catName}</button>`;
+  });
+  container.innerHTML = buttonsHtml;
 }
 
 function renderProductGrid(products) {
